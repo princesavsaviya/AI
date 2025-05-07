@@ -20,31 +20,38 @@ search_types = ["Uniform Cost Search","Manhattan Distance Heuristic","Misplaced 
 all_depths = []
 all_states = []
 all_times = []
+all_nodes = []
 
 for idx, h in enumerate(h_funcs):
     depths = []
     states = []
     times = []
+    nodes = []
     print(f"\n=== {search_types[idx]} ===")
-    for problem in Problems[:4]:
+    for problem in Problems:
         print("Initial State:\n", problem)
         start_time = time.time()
-        _, g, expanded_nodes = general_search(problem, goal_state, h)
+        _, g, expanded_nodes,max_nodes = general_search(problem, goal_state, h)
         end_time = time.time()
         depths.append(g)
         states.append(expanded_nodes)
         times.append(end_time - start_time)
+        nodes.append(max_nodes)
     all_depths.append(depths)
     all_states.append(states)
     all_times.append(times)
+    all_nodes.append(nodes)
 
+all_states = np.log10(np.array(all_states))
+all_times = np.log10(np.array(all_times))
+all_nodes = np.log10(np.array(all_nodes))
 
 fig, ax = plt.subplots(figsize=(10, 5))
 for i, (depths, states) in enumerate(zip(all_depths, all_states)):
-    ax.plot(depths[:4], states[:4], label=search_types[i], marker='o')
+    ax.plot(depths, states, label=search_types[i], marker='o')
 ax.set_xlabel('Depth of Solution')
-ax.set_ylabel('Expanded Nodes')
-ax.set_title('Expanded Nodes vs Depth (Linear Scale)')
+ax.set_ylabel('Expanded Nodes (log scale base 10)')
+ax.set_title('Expanded Nodes vs Depth (Log Scale base 10)')
 ax.grid(True)
 ax.legend()
 
@@ -53,10 +60,22 @@ plt.show()
 
 fig, ax = plt.subplots(figsize=(10, 5))
 for i, (depths, times) in enumerate(zip(all_depths, all_times)):
-    ax.plot(depths[:4], times[:4], label=search_types[i], marker='o')
+    ax.plot(depths, times, label=search_types[i], marker='o')
 ax.set_xlabel('Depth of Solution')
-ax.set_ylabel('Time (seconds)')
-ax.set_title('Time vs Depth (Linear Scale)')
+ax.set_ylabel('Time (seconds) (log scale base 10)')
+ax.set_title('Time vs Depth (Log Scale base 10)')
+ax.grid(True)
+ax.legend()
+
+plt.tight_layout()
+plt.show()
+
+fig, ax = plt.subplots(figsize=(10, 5))
+for i, (depths, nodes) in enumerate(zip(all_depths, all_nodes)):
+    ax.plot(depths, nodes, label=search_types[i], marker='o')
+ax.set_xlabel('Depth of Solution')
+ax.set_ylabel('Max Nodes in Queue (log scale base 10)')
+ax.set_title('Max Nodes in Queue vs Depth (Log Scale base 10)')
 ax.grid(True)
 ax.legend()
 

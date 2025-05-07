@@ -82,7 +82,7 @@ def general_search(init_state,goal_state,h_func):
     nodes = [] # Priority Queue
     hq.heappush(nodes, (init_node['f'], next(counter), init_node))
     visited = set() # To keep track of already visited nodes
-    
+    max_nodes = 0 # To keep track of the maximum number of nodes in the queue
     while nodes:
         
         g, count,node = hq.heappop(nodes) # get the node with least g value
@@ -99,10 +99,13 @@ def general_search(init_state,goal_state,h_func):
             print()
             print("Depth of Solution :: ",g)
             print()
+            print("Max Nodes in Queue :: ", max_nodes)
+            print()
             print("Ans :: ")
-            return (node['state'],g,expanded_nodes)
+            return (node['state'],g,expanded_nodes,max_nodes)
         
         nodes = queuing_function(nodes, node,goal_state,h_func)
+        max_nodes = max(max_nodes, len(nodes))
     return "failure"
 
 if __name__ == "__main__":
