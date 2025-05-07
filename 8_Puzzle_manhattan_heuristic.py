@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr 15 16:57:24 2025
+Created on Tue Apr 15 22:02:14 2025
 
 @author: prince
 """
+
 
 import numpy as np
 import heapq as hq
@@ -11,13 +12,23 @@ import itertools
 
 counter = itertools.count()
 
-
-
-def create_node(state,g):
+def manhattan_heuristic(state,goal_state,n):
+    distance = 0
+    for i in range(n):
+        for j in range(n):
+            row,column = np.argwhere(goal_state==state[i][j])[0]
+            distance = distance + np.abs(row-i) + np.abs(column - j)
+    
+    return distance
+    
+    
+def create_node(state,g,h):
     "Create a Dictionary to store state and value of g(n)."
     
     return {'state':state,
-            'g':g}
+            'g':g,
+            'h':h,
+            'f':h+g}
 
 def get_blank_space(node):
     "Get the Index of the Blank Space(0)."
@@ -34,7 +45,7 @@ def get_valid_moves(row,column,n):
             valid_moves.append(move)
     return valid_moves
 
-def queuing_function(nodes,node):
+def queuing_function(nodes,node,goal_state):
     "Generate the states using valid moves and append it to the priority queue."
     
     n = node['state'].shape[0]
@@ -47,19 +58,21 @@ def queuing_function(nodes,node):
     for move in valid_moves:
         temp = np.copy(node['state'])
         temp[row, column], temp[row+move[0], column+move[1]] = temp[row+move[0], column+move[1]], temp[row, column]
-        temp_node = create_node(temp, node['g']+1)
-        hq.heappush(nodes, (temp_node['g'], next(counter),temp_node)) # universal counter is used as tie breaker for the same temp_node
+        h = manhattan_heuristic(temp, goal_state,n)
+        temp_node = create_node(temp, node['g']+1,h)
+        hq.heappush(nodes, (temp_node['f'], next(counter),temp_node)) # universal counter is used as tie breaker for the same temp_node
         
     return nodes
 
         
 def general_search(init_state,goal_state):
     "Perform search using the A* Algorithm"
-    
-    init_node = create_node(init_state, 0)
+    n = init_state.shape[0]
+    h = manhattan_heuristic(init_state, goal_state,n)
+    init_node = create_node(init_state, 0,h)
     
     nodes = [] # Priority Queue
-    hq.heappush(nodes, (init_node['g'], next(counter), init_node))
+    hq.heappush(nodes, (init_node['f'], next(counter), init_node))
     visited = set() # To keep track of already visited nodes
     
     while nodes:
@@ -80,7 +93,7 @@ def general_search(init_state,goal_state):
             print("Ans :: ")
             return node['state']
         
-        nodes = queuing_function(nodes, node)
+        nodes = queuing_function(nodes, node,goal_state)
     return "failure"
 
 # Default Puzzle
@@ -111,6 +124,7 @@ if game_mode == 2:
         print("Initial State :: \n", init_state)
         print(general_search(init_state, goal_state))
 else:
+    print((init_state==goal_state).sum())
     print(general_search(init_state, goal_state))
 
 
