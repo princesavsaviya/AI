@@ -47,7 +47,6 @@ def queuing_function(nodes,node,goal_state):
     valid_moves = get_valid_moves(row, column, n)
 
     # Create the States from the valid moves calculated using the get_valid_moves function and update the nodes 
-    # Since it is uniform Cost search it will add 1 as the cost to move to next state.
     for move in valid_moves:
         temp = np.copy(node['state'])
         temp[row, column], temp[row+move[0], column+move[1]] = temp[row+move[0], column+move[1]], temp[row, column]

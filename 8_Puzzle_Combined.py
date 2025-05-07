@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr 15 22:02:14 2025
+Created on Tue Apr 15 16:57:24 2025
 
 @author: prince
 """
-
 
 import numpy as np
 import heapq as hq
 import itertools
 
 counter = itertools.count()
+
+def zero_heuristic(state,goal_state,n):
+    "Heuristic function to calculate the distance between the current state and goal state."
+    return 0
 
 def manhattan_heuristic(state,goal_state,n):
     distance = 0
@@ -20,8 +23,12 @@ def manhattan_heuristic(state,goal_state,n):
             distance = distance + np.abs(row-i) + np.abs(column - j)
     
     return distance
-    
-    
+
+def misplaced_tile_heuristic(state,goal_state,n):
+    misplaced_values = (state!=goal_state).sum()
+    return misplaced_values
+
+
 def create_node(state,g,h):
     "Create a Dictionary to store state and value of g(n)."
     
@@ -45,7 +52,7 @@ def get_valid_moves(row,column,n):
             valid_moves.append(move)
     return valid_moves
 
-def queuing_function(nodes,node,goal_state):
+def queuing_function(nodes,node,goal_state,h_func):
     "Generate the states using valid moves and append it to the priority queue."
     
     n = node['state'].shape[0]
@@ -57,17 +64,18 @@ def queuing_function(nodes,node,goal_state):
     for move in valid_moves:
         temp = np.copy(node['state'])
         temp[row, column], temp[row+move[0], column+move[1]] = temp[row+move[0], column+move[1]], temp[row, column]
-        h = manhattan_heuristic(temp, goal_state,n)
+        h = h_func(temp, goal_state,n)
         temp_node = create_node(temp, node['g']+1,h)
         hq.heappush(nodes, (temp_node['f'], next(counter),temp_node)) # universal counter is used as tie breaker for the same temp_node
         
     return nodes
 
         
-def general_search(init_state,goal_state):
+def general_search(init_state,goal_state,h_func):
     "Perform search using the A* Algorithm"
+    
     n = init_state.shape[0]
-    h = manhattan_heuristic(init_state, goal_state,n)
+    h = h_func(init_state, goal_state,n)
     init_node = create_node(init_state, 0,h)
     
     nodes = [] # Priority Queue
@@ -92,13 +100,25 @@ def general_search(init_state,goal_state):
             print("Ans :: ")
             return node['state']
         
-        nodes = queuing_function(nodes, node,goal_state)
+        nodes = queuing_function(nodes, node,goal_state,h_func)
     return "failure"
 
 # Default Puzzle
 init_state = np.array([1,6,7,5,0,3,4,8,2]).reshape((3,3))
 goal_state = np.array([1,2,3,4,5,6,7,8,0]).reshape((3,3))
 
+
+search_type = int(input("Enter 1 to use Misplaced Tile Heuristic \nEnter 2 to use Manhattan Distance Heuristic \nEnter 3 to use Uniform Cost Search :: "))
+while search_type not in [1,2,3]:
+    print("Invalid Input, try again!")
+    search_type = int(input("Enter 1 to use Misplaced Tile Heuristic \nEnter 2 to use Manhattan Distance Heuristic \nEnter 3 to use Uniform Cost Search :: "))
+if search_type == 1:
+    h_func = misplaced_tile_heuristic
+elif search_type == 2:
+    n = init_state.shape[0]
+    h_func = manhattan_heuristic
+else:
+    h_func = zero_heuristic
 
 game_mode = int(input("Enter 1 to use default Puzzle \nEnter 2 to use custom Puzzle :: "))
 
@@ -121,10 +141,9 @@ if game_mode == 2:
         print("There are no blank space or more than 1 blank space, try again!")
     else:
         print("Initial State :: \n", init_state)
-        print(general_search(init_state, goal_state))
+        print(general_search(init_state, goal_state,h_func))
 else:
-    print((init_state==goal_state).sum())
-    print(general_search(init_state, goal_state))
+    print(general_search(init_state, goal_state,h_func))
 
 
 
