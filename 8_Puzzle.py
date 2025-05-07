@@ -11,13 +11,18 @@ import itertools
 
 counter = itertools.count()
 
+def zero_heuristic():
+    "Heuristic function to calculate the distance between the current state and goal state."
+    # Since it is uniform cost search we can use 0 as heuristic value.
+    return 0
 
-
-def create_node(state,g):
+def create_node(state,g,h):
     "Create a Dictionary to store state and value of g(n)."
     
     return {'state':state,
-            'g':g}
+            'g':g,
+            'h':h,
+            'f':h+g}
 
 def get_blank_space(node):
     "Get the Index of the Blank Space(0)."
@@ -47,7 +52,8 @@ def queuing_function(nodes,node):
     for move in valid_moves:
         temp = np.copy(node['state'])
         temp[row, column], temp[row+move[0], column+move[1]] = temp[row+move[0], column+move[1]], temp[row, column]
-        temp_node = create_node(temp, node['g']+1)
+        h = zero_heuristic()
+        temp_node = create_node(temp, node['g']+1,h)
         hq.heappush(nodes, (temp_node['g'], next(counter),temp_node)) # universal counter is used as tie breaker for the same temp_node
         
     return nodes
@@ -56,7 +62,8 @@ def queuing_function(nodes,node):
 def general_search(init_state,goal_state):
     "Perform search using the A* Algorithm"
     
-    init_node = create_node(init_state, 0)
+    h = zero_heuristic()
+    init_node = create_node(init_state, 0,h)
     
     nodes = [] # Priority Queue
     hq.heappush(nodes, (init_node['g'], next(counter), init_node))
