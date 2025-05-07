@@ -106,7 +106,7 @@ def general_search(init_state,goal_state,h_func):
         
         nodes = queuing_function(nodes, node,goal_state,h_func)
         max_nodes = max(max_nodes, len(nodes))
-    return "failure"
+    return ("failure")
 
 if __name__ == "__main__":
     # Default Puzzle
